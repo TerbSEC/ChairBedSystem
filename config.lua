@@ -1,7 +1,7 @@
 Config = {}
 
 Config.objects = {
-	object = nil, ObjectVertX = nil, ObjectVertY = nil, ObjectVertZ = nil, OjbectDir = nil, isBed = nil,
+	object = nil, ObjectVertX = nil, ObjectVertY = nil, ObjectVertZ = nil, OjbectDir = nil, isBed = nil, -- // Please dont change this line!;)
 	SitAnimation = 'PROP_HUMAN_SEAT_CHAIR_MP_PLAYER',
 	LayBackAnimation = 'WORLD_HUMAN_SUNBATHE_BACK',
 	LayStomachAnimation = 'WORLD_HUMAN_SUNBATHE',
