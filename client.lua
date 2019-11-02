@@ -4,39 +4,24 @@ local anim = "back"
 local animscroll = 0
 local oPlayer = false
 
-local objects = {
-	object = nil, ObjectVert = nil, ObjectVertY = nil, OjbectDir = nil, isBed = nil,
-	locations = {
-		[1] = {object="v_med_bed2", verticalOffset=-0.0, verticalOffsetY=0.0, direction=0.0, bed=true},
-		[2] = {object="v_serv_ct_chair02", verticalOffset=-0.0, verticalOffsetY=0.0, direction=168.0, bed=false},
-		[3] = {object="prop_off_chair_04", verticalOffset=-0.4, verticalOffsetY=0.0, direction=168.0, bed=false},
-		[4] = {object="prop_off_chair_03", verticalOffset=-0.4, verticalOffsetY=0.0, direction=168.0, bed=false},
-		[5] = {object="prop_off_chair_05", verticalOffset=-0.4, verticalOffsetY=0.0, direction=168.0, bed=false},
-		[6] = {object="v_club_officechair", verticalOffset=-0.4, verticalOffsetY=0.0, direction=168.0, bed=false},
-		[7] = {object="v_ilev_leath_chr", verticalOffset=-0.4, verticalOffsetY=0.0, direction=168.0, bed=false},
-		[8] = {object="v_corp_offchair", verticalOffset=-0.4, verticalOffsetY=0.0, direction=168.0, bed=false},
-		[9] = {object="v_med_emptybed", verticalOffset=-0.2, verticalOffsetY=0.13, direction=90.0, bed=false},
-		[10] = {object="Prop_Off_Chair_01", verticalOffset=-0.5, verticalOffsetY=-0.1, direction=180.0, bed=false}
-	}
-}
-
-
 CreateThread(function()
 	while true do
-		Wait(2000)
+		Wait(1000)
 		oPlayer = PlayerPedId()
 		local pedPos = GetEntityCoords(oPlayer)
-		for k,v in pairs(objects.locations) do
-			local objectC = GetClosestObjectOfType(pedPos.x, pedPos.y, pedPos.z, 0.8, GetHashKey(v.object), 0, 0, 0)
-			local oEntityCoords = GetEntityCoords(objectC)
-			local objectexits = DoesEntityExist(objectC)
+		for k,v in pairs(Config.objects.locations) do
+			local oSelectedObject = GetClosestObjectOfType(pedPos.x, pedPos.y, pedPos.z, 0.8, GetHashKey(v.object), 0, 0, 0)
+			local oEntityCoords = GetEntityCoords(oSelectedObject)
+			local objectexits = DoesEntityExist(oSelectedObject)
 			if objectexits then
 				if GetDistanceBetweenCoords(oEntityCoords.x, oEntityCoords.y, oEntityCoords.z,pedPos) < 15.0 then
-					if objectC ~= 0 then
-						if objectC ~= objects.object then
-							objects.object = objectC
-							objects.ObjectVert = v.verticalOffset
+					if oSelectedObject ~= 0 then
+						local objects = Config.objects
+						if oSelectedObject ~= objects.object then
+							objects.object = oSelectedObject
+							objects.ObjectVertX = v.verticalOffsetX
 							objects.ObjectVertY = v.verticalOffsetY
+							objects.ObjectVertZ = v.verticalOffsetZ
 							objects.OjbectDir = v.direction
 							objects.isBed = v.bed
 						end
@@ -50,7 +35,8 @@ end)
 CreateThread(function()
 	while true do
 		Wait(1)
-		if objects.object ~= nil and objects.ObjectVert ~= nil and objects.ObjectVertY ~= nil and objects.OjbectDir ~= nil and objects.isBed ~= nil then
+		local objects = Config.objects
+		if objects.object ~= nil and objects.ObjectVertX ~= nil and objects.ObjectVertY ~= nil and objects.ObjectVertZ ~= nil and objects.OjbectDir ~= nil and objects.isBed ~= nil then
 			local player = oPlayer
 			local getPlayerCoords = GetEntityCoords(player)
 			local objectcoords = GetEntityCoords(objects.object)
@@ -83,21 +69,17 @@ CreateThread(function()
 						end
 					end
 					if IsControlJustPressed(0, 38) then
-						PlayAnimOnPlayer(objects.object, false, false, false, objects.isBed, player, objectcoords)
+						PlayAnimOnPlayer(objects.object,objects.ObjectVertX,objects.ObjectVertY,objects.ObjectVertZ,objects.OjbectDir, objects.isBed, player, objectcoords)
 					end
 				else
 					DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.30, " ~g~G~w~ to sit")
 					if IsControlJustPressed(0, 58) then
-						PlayAnimOnPlayer(objects.object,objects.ObjectVert,objects.ObjectVertY,objects.OjbectDir, objects.isBed, player, objectcoords)
+						PlayAnimOnPlayer(objects.object,objects.ObjectVertX,objects.ObjectVertY,objects.ObjectVertZ,objects.OjbectDir, objects.isBed, player, objectcoords)
 					end
 				end
 			end
 			if using == true then
 				Draw2DText("~g~F~w~ to stand up!",0,1,0.5,0.92,0.6,255,255,255,255)
-
-				DisableControlAction( 0, 56, true )
-				DisableControlAction( 0, 244, true )
-				DisableControlAction( 0, 301, true )
 
 				if IsControlJustPressed(0, 23) or IsControlJustPressed(0, 48) or IsControlJustPressed(0, 20) then
 					ClearPedTasks(player)
@@ -113,21 +95,19 @@ CreateThread(function()
 	end
 end)
 
-function PlayAnimOnPlayer(object,vert,verty,dir, isBed, ped, objectcoords)
+function PlayAnimOnPlayer(object,vertx,verty,vertz,dir, isBed, ped, objectcoords)
 	lastPos = GetEntityCoords(ped)
 	FreezeEntityPosition(object, true)
 	SetEntityCoords(ped, objectcoords.x, objectcoords.y, objectcoords.z+-1.4)
 	FreezeEntityPosition(ped, true)
 	using = true
 	if isBed == false then
-		TaskStartScenarioAtPosition(ped, 'PROP_HUMAN_SEAT_CHAIR_MP_PLAYER', objectcoords.x, objectcoords.y-verty, objectcoords.z-vert, GetEntityHeading(object)+dir, 0, true, true)
+		TaskStartScenarioAtPosition(ped, Config.objects.SitAnimation, objectcoords.x+vertx, objectcoords.y-verty, objectcoords.z-vertz, GetEntityHeading(object)+dir, 0, true, true)
 	else
-		local verticalOffset = -1.4
-		local direction = 0.0
 		if anim == "back" then
-			TaskStartScenarioAtPosition(ped, 'WORLD_HUMAN_SUNBATHE_BACK', objectcoords.x, objectcoords.y, objectcoords.z-verticalOffset, GetEntityHeading(object)+direction, 0, true, true)
+			TaskStartScenarioAtPosition(ped, Config.objects.LayBackAnimation, objectcoords.x+vertx, objectcoords.y+verty, objectcoords.z-vertz, GetEntityHeading(object)+dir, 0, true, true)
 		elseif anim == "stomach" then
-			TaskStartScenarioAtPosition(ped, 'WORLD_HUMAN_SUNBATHE', objectcoords.x, objectcoords.y, objectcoords.z-verticalOffset, GetEntityHeading(object)+direction, 0, true, true)
+			TaskStartScenarioAtPosition(ped, Config.objects.LayStomachAnimation, objectcoords.x+vertx, objectcoords.y+verty, objectcoords.z-vertz, GetEntityHeading(object)+dir, 0, true, true)
 		end
 	end
 end
