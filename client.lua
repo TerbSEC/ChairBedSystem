@@ -3,6 +3,7 @@ local lastPos = nil
 local anim = "back"
 local animscroll = 0
 local oPlayer = false
+Config = {}
 
 CreateThread(function()
 	while true do
@@ -42,8 +43,12 @@ CreateThread(function()
 			local objectcoords = GetEntityCoords(objects.object)
 			if GetDistanceBetweenCoords(objectcoords.x, objectcoords.y, objectcoords.z,getPlayerCoords) < 1.8 and not using then
 				if objects.isBed == true then
-					DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.30, "~g~E~w~ to lie on your "..anim)
-					DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.20, "~w~ Switch between the stomach, back and sit with the ~g~arrow keys")
+					if anim == "sit" then
+						DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.30, Config.Text.SitOnBed)
+					else
+						DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.30, Config.Text.LieOnBed.." "..anim)
+					end
+					DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.20, Config.Text.SwitchBetween)
 					if IsControlJustPressed(0, 175) then -- right
 						animscroll = animscroll+1
 						if animscroll == 0 then
@@ -51,6 +56,8 @@ CreateThread(function()
 						elseif animscroll == 1 then
 							anim = "stomach"
 						elseif animscroll == 2 then
+							anim = "sit"
+						elseif animscroll == 3 then
 							animscroll = 1
 						end
 					end
@@ -64,6 +71,8 @@ CreateThread(function()
 						elseif animscroll == 1 then
 							anim = "stomach"
 						elseif animscroll == 2 then
+							anim = "sit"
+						elseif animscroll == 3 then
 							animscroll = 0
 							anim = "back"
 						end
@@ -72,7 +81,7 @@ CreateThread(function()
 						PlayAnimOnPlayer(objects.object,objects.ObjectVertX,objects.ObjectVertY,objects.ObjectVertZ,objects.OjbectDir, objects.isBed, player, objectcoords)
 					end
 				else
-					DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.30, " ~g~G~w~ to sit")
+					DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.30, Config.Text.SitOnChair)
 					if IsControlJustPressed(0, 58) then
 						PlayAnimOnPlayer(objects.object,objects.ObjectVertX,objects.ObjectVertY,objects.ObjectVertZ,objects.OjbectDir, objects.isBed, player, objectcoords)
 					end
@@ -82,7 +91,7 @@ CreateThread(function()
 				Draw2DText("~g~F~w~ to stand up!",0,1,0.5,0.92,0.6,255,255,255,255)
 
 				if IsControlJustPressed(0, 23) or IsControlJustPressed(0, 48) or IsControlJustPressed(0, 20) then
-					ClearPedTasks(player)
+					ClearPedTasksImmediately(player)
 					using = false
 					local x,y,z = table.unpack(lastPos)
 					if GetDistanceBetweenCoords(x, y, z,getPlayerCoords) < 10 then
@@ -95,19 +104,49 @@ CreateThread(function()
 	end
 end)
 
+if Config.Healing ~= 0 then
+	CreateThread(function()
+		while true do
+			local objects = Config.objects
+			Wait(Config.Healing*1000)
+			if using == true then
+				if objects.isBed == true then
+					local health = GetEntityHealth(oPlayer)
+					if health <= 199 then
+						SetEntityHealth(oPlayer,health+1)
+					end
+				end
+			end
+		end
+	end)
+end
+
+
 function PlayAnimOnPlayer(object,vertx,verty,vertz,dir, isBed, ped, objectcoords)
 	lastPos = GetEntityCoords(ped)
 	FreezeEntityPosition(object, true)
-	SetEntityCoords(ped, objectcoords.x, objectcoords.y, objectcoords.z+-1.4)
 	FreezeEntityPosition(ped, true)
 	using = true
 	if isBed == false then
 		TaskStartScenarioAtPosition(ped, Config.objects.SitAnimation, objectcoords.x+vertx, objectcoords.y-verty, objectcoords.z-vertz, GetEntityHeading(object)+dir, 0, true, true)
 	else
 		if anim == "back" then
-			TaskStartScenarioAtPosition(ped, Config.objects.LayBackAnimation, objectcoords.x+vertx, objectcoords.y+verty, objectcoords.z-vertz, GetEntityHeading(object)+dir, 0, true, true)
+
+			SetEntityCoords(ped, objectcoords.x, objectcoords.y, objectcoords.z+0.5)
+			SetEntityHeading(ped,  GetEntityHeading(object)-180.0)
+			local dict = Config.objects.BedBackAnimation.dict
+			local anim = Config.objects.BedBackAnimation.anim
+
+			RequestAnimDict(dict)
+			while not HasAnimDictLoaded(dict) do
+				Citizen.Wait(0)
+			end
+
+			TaskPlayAnim(ped, dict , anim, 8.0, 1.0, -1, 1, 0, 0, 0, 0 )
 		elseif anim == "stomach" then
-			TaskStartScenarioAtPosition(ped, Config.objects.LayStomachAnimation, objectcoords.x+vertx, objectcoords.y+verty, objectcoords.z-vertz, GetEntityHeading(object)+dir, 0, true, true)
+			TaskStartScenarioAtPosition(ped, Config.objects.BedStomachAnimation, objectcoords.x+vertx, objectcoords.y+verty, objectcoords.z-vertz, GetEntityHeading(object)+dir, 0, true, true)
+		elseif anim == "sit" then
+			TaskStartScenarioAtPosition(ped, Config.objects.BedSitAnimation, objectcoords.x+vertx, objectcoords.y+verty, objectcoords.z-vertz, GetEntityHeading(object)+180.0, 0, true, true)
 		end
 	end
 end
