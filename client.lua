@@ -3,28 +3,32 @@ local lastPos = nil
 local anim = "back"
 local animscroll = 0
 local oPlayer = false
+local oPlayerCoords = false
+local canSleep = true
 Config = {}
 
 CreateThread(function()
 	while true do
 		Wait(1000)
 		oPlayer = PlayerPedId()
-		local pedPos = GetEntityCoords(oPlayer)
-		for k,v in pairs(Config.objects.locations) do
-			local oSelectedObject = GetClosestObjectOfType(pedPos.x, pedPos.y, pedPos.z, 0.8, GetHashKey(v.object), 0, 0, 0)
-			local oEntityCoords = GetEntityCoords(oSelectedObject)
-			local objectexits = DoesEntityExist(oSelectedObject)
-			if objectexits then
-				if GetDistanceBetweenCoords(oEntityCoords.x, oEntityCoords.y, oEntityCoords.z,pedPos) < 15.0 then
-					if oSelectedObject ~= 0 then
-						local objects = Config.objects
-						if oSelectedObject ~= objects.object then
-							objects.object = oSelectedObject
-							objects.ObjectVertX = v.verticalOffsetX
-							objects.ObjectVertY = v.verticalOffsetY
-							objects.ObjectVertZ = v.verticalOffsetZ
-							objects.OjbectDir = v.direction
-							objects.isBed = v.bed
+		oPlayerCoords = GetEntityCoords(oPlayer)
+		if using == false and canSleep == true then
+			for k,v in pairs(Config.objects.locations) do
+				local oSelectedObject = GetClosestObjectOfType(oPlayerCoords.x, oPlayerCoords.y, oPlayerCoords.z, 0.8, GetHashKey(v.object), 0, 0, 0)
+				local oEntityCoords = GetEntityCoords(oSelectedObject)
+				local objectexits = DoesEntityExist(oSelectedObject)
+				if objectexits then
+					if GetDistanceBetweenCoords(oEntityCoords.x, oEntityCoords.y, oEntityCoords.z,oPlayerCoords) < 10.0 then
+						if oSelectedObject ~= 0 then
+							local objects = Config.objects
+							if oSelectedObject ~= objects.object then
+								objects.object = oSelectedObject
+								objects.ObjectVertX = v.verticalOffsetX
+								objects.ObjectVertY = v.verticalOffsetY
+								objects.ObjectVertZ = v.verticalOffsetZ
+								objects.OjbectDir = v.direction
+								objects.isBed = v.bed
+							end
 						end
 					end
 				end
@@ -33,22 +37,24 @@ CreateThread(function()
 	end
 end)
 
+
 CreateThread(function()
 	while true do
 		Wait(1)
+		canSleep = true
 		local objects = Config.objects
 		if objects.object ~= nil and objects.ObjectVertX ~= nil and objects.ObjectVertY ~= nil and objects.ObjectVertZ ~= nil and objects.OjbectDir ~= nil and objects.isBed ~= nil then
 			local player = oPlayer
-			local getPlayerCoords = GetEntityCoords(player)
+			local getPlayerCoords = oPlayerCoords
 			local objectcoords = GetEntityCoords(objects.object)
 			if GetDistanceBetweenCoords(objectcoords.x, objectcoords.y, objectcoords.z,getPlayerCoords) < 1.8 and not using then
 				if objects.isBed == true then
 					if anim == "sit" then
-						DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.30, Config.Text.SitOnBed)
+						DrawText3D(objectcoords.x, objectcoords.y, objectcoords.z+0.30, Config.Text.SitOnBed)
 					else
-						DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.30, Config.Text.LieOnBed.." "..anim)
+						DrawText3D(objectcoords.x, objectcoords.y, objectcoords.z+0.30, Config.Text.LieOnBed.." "..anim)
 					end
-					DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.20, Config.Text.SwitchBetween)
+					DrawText3D(objectcoords.x, objectcoords.y, objectcoords.z+0.20, Config.Text.SwitchBetween)
 					if IsControlJustPressed(0, 175) then -- right
 						animscroll = animscroll+1
 						if animscroll == 0 then
@@ -81,14 +87,14 @@ CreateThread(function()
 						PlayAnimOnPlayer(objects.object,objects.ObjectVertX,objects.ObjectVertY,objects.ObjectVertZ,objects.OjbectDir, objects.isBed, player, objectcoords)
 					end
 				else
-					DrawText3Ds(objectcoords.x, objectcoords.y, objectcoords.z+0.30, Config.Text.SitOnChair)
+					DrawText3D(objectcoords.x, objectcoords.y, objectcoords.z+0.30, Config.Text.SitOnChair)
 					if IsControlJustPressed(0, objects.ButtonToSitOnChair) then
 						PlayAnimOnPlayer(objects.object,objects.ObjectVertX,objects.ObjectVertY,objects.ObjectVertZ,objects.OjbectDir, objects.isBed, player, objectcoords)
 					end
 				end
 			end
 			if using == true then
-				Draw2DText(Config.Text.Standup,0,1,0.5,0.92,0.6,255,255,255,255)
+				DrawText2D(Config.Text.Standup,0,1,0.5,0.92,0.6,255,255,255,255)
 
 				if IsControlJustPressed(0, objects.ButtonToStandUp) then
 					ClearPedTasksImmediately(player)
@@ -100,6 +106,10 @@ CreateThread(function()
 					FreezeEntityPosition(player, false)
 				end
 			end
+		end
+
+		if canSleep then
+			Citizen.Wait(1000)
 		end
 	end
 end)
@@ -123,7 +133,7 @@ end
 
 
 function PlayAnimOnPlayer(object,vertx,verty,vertz,dir, isBed, ped, objectcoords)
-	lastPos = GetEntityCoords(ped)
+	lastPos = oPlayerCoords
 	FreezeEntityPosition(object, true)
 	FreezeEntityPosition(ped, true)
 	using = true
@@ -170,7 +180,7 @@ function PlayAnimOnPlayer(object,vertx,verty,vertz,dir, isBed, ped, objectcoords
 
 				Animation(dict, anim, ped)
 			else
-				TaskStartScenarioAtPosition(ped, Config.objects.BedSitAnimation.anim, objectcoords.x+vertx, objectcoords.y+verty, objectcoords.z-vertz, GetEntityHeading(object)+dir, 0, true, true)
+				TaskStartScenarioAtPosition(ped, Config.objects.BedSitAnimation.anim, objectcoords.x+vertx, objectcoords.y+verty, objectcoords.z-vertz, GetEntityHeading(object)+180.0, 0, true, true)
 			end
 
 		end
@@ -190,7 +200,8 @@ end
 
 
 
-function DrawText3Ds(x,y,z, text)
+function DrawText3D(x,y,z, text)
+	canSleep = false
 	local onScreen,_x,_y=World3dToScreen2d(x,y,z)
 
 	if onScreen then
@@ -207,7 +218,9 @@ function DrawText3Ds(x,y,z, text)
 	end
 end
 
-function Draw2DText(text,font,centre,x,y,scale,r,g,b,a)
+function DrawText2D(text,font,centre,x,y,scale,r,g,b,a)
+	canSleep = false
+
 	SetTextFont(6)
 	SetTextProportional(6)
 	SetTextScale(scale/1.0, scale/1.0)
