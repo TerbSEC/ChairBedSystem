@@ -19,21 +19,21 @@ end)
 
 
 RegisterServerEvent('ChairBedSystem:Server:Enter')
-AddEventHandler('ChairBedSystem:Server:Enter', function(object,vertx,verty,vertz,dir, isBed, objectcoords)
+AddEventHandler('ChairBedSystem:Server:Enter', function(object, objectcoords)
     local oSource = source
     if oArray[objectcoords] == nil then
         oPlayerUse[oSource] = objectcoords
         oArray[objectcoords] = true
-        TriggerClientEvent('ChairBedSystem:Client:Animation', oSource, object,vertx,verty,vertz,dir, isBed, objectcoords)
+        TriggerClientEvent('ChairBedSystem:Client:Animation', oSource, object, objectcoords)
     end
 end)
 
 
 RegisterServerEvent('ChairBedSystem:Server:Leave')
-AddEventHandler('ChairBedSystem:Server:Leave', function(id)
+AddEventHandler('ChairBedSystem:Server:Leave', function(objectcoords)
     local oSource = source
 
     oPlayerUse[oSource] = nil
-    oArray[id] = nil
+    oArray[objectcoords] = nil
 end)
 

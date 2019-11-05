@@ -25,12 +25,12 @@ CreateThread(function()
 					if GetDistanceBetweenCoords(oEntityCoords.x, oEntityCoords.y, oEntityCoords.z,oPlayerCoords) < 10.0 then
 						if oSelectedObject ~= 0 then
 							local objects = Config.objects
-							if oSelectedObject ~= objects.object then
-								objects.object = oSelectedObject
+							if oSelectedObject ~= objects.Object then
+								objects.Object = oSelectedObject
 								objects.ObjectVertX = v.verticalOffsetX
 								objects.ObjectVertY = v.verticalOffsetY
 								objects.ObjectVertZ = v.verticalOffsetZ
-								objects.OjbectDir = v.direction
+								objects.ObjectDir = v.direction
 								objects.isBed = v.bed
 							end
 						end
@@ -47,10 +47,10 @@ CreateThread(function()
 		Wait(1)
 		oCanSleep = true
 		local objects = Config.objects
-		if objects.object ~= nil and objects.ObjectVertX ~= nil and objects.ObjectVertY ~= nil and objects.ObjectVertZ ~= nil and objects.OjbectDir ~= nil and objects.isBed ~= nil then
+		if objects.Object ~= nil and objects.ObjectVertX ~= nil and objects.ObjectVertY ~= nil and objects.ObjectVertZ ~= nil and objects.ObjectDir ~= nil and objects.isBed ~= nil then
 			local player = oPlayer
 			local getPlayerCoords = oPlayerCoords
-			local objectcoords = GetEntityCoords(objects.object)
+			local objectcoords = GetEntityCoords(objects.Object)
 			if GetDistanceBetweenCoords(objectcoords.x, objectcoords.y, objectcoords.z,getPlayerCoords) < 1.8 and not oUsing then
 				if objects.isBed == true then
 					if oAnim == "sit" then
@@ -90,7 +90,7 @@ CreateThread(function()
 					if IsControlJustPressed(0, objects.ButtonToLayOnBed) then
 						if Config.Cooldown ~= 0 and oCooldown == 0 then
 							oCooldown = Config.Cooldown
-							TriggerServerEvent('ChairBedSystem:Server:Enter', objects.object,objects.ObjectVertX,objects.ObjectVertY,objects.ObjectVertZ,objects.OjbectDir, objects.isBed, objectcoords)
+							TriggerServerEvent('ChairBedSystem:Server:Enter', objects, objectcoords)
 						end
 					end
 				else
@@ -98,7 +98,7 @@ CreateThread(function()
 					if IsControlJustPressed(0, objects.ButtonToSitOnChair) then
 						if Config.Cooldown ~= 0 and oCooldown == 0 then
 							oCooldown = Config.Cooldown
-							TriggerServerEvent('ChairBedSystem:Server:Enter', objects.object,objects.ObjectVertX,objects.ObjectVertY,objects.ObjectVertZ,objects.OjbectDir, objects.isBed, objectcoords)
+							TriggerServerEvent('ChairBedSystem:Server:Enter', objects, objectcoords)
 						end
 					end
 				end
@@ -107,7 +107,7 @@ CreateThread(function()
 				DrawText2D(Config.Text.Standup,0,1,0.5,0.92,0.6,255,255,255,255)
 
 				if IsControlJustPressed(0, objects.ButtonToStandUp) then
-					TriggerServerEvent('ChairBedSystem:Server:Leave', GetEntityCoords(objects.object))
+					TriggerServerEvent('ChairBedSystem:Server:Leave', GetEntityCoords(objects.Object))
 					ClearPedTasksImmediately(player)
 					oUsing = false
 					local x,y,z = table.unpack(oLastPos)
@@ -144,7 +144,14 @@ end
 
 
 RegisterNetEvent("ChairBedSystem:Client:Animation")
-AddEventHandler("ChairBedSystem:Client:Animation", function(object,vertx,verty,vertz,dir, isBed, objectcoords)
+AddEventHandler("ChairBedSystem:Client:Animation", function(objects,objectcoords)
+	local object = objects.Object
+	local vertx = objects.ObjectVertX
+	local verty = objects.ObjectVertY
+	local vertz = objects.ObjectVertZ
+	local dir = objects.ObjectDir
+	local isBed = objects.isBed
+
 	local ped = oPlayer
 	oLastPos = oPlayerCoords
 	FreezeEntityPosition(object, true)
