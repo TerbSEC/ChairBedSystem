@@ -125,22 +125,20 @@ CreateThread(function()
 	end
 end)
 
-if Config.Healing ~= 0 then
-	CreateThread(function()
-		while true do
-			local objects = Config.objects
-			Wait(Config.Healing*1000)
-			if oUsing == true then
-				if objects.isBed == true then
-					local health = GetEntityHealth(oPlayer)
-					if health <= 199 then
-						SetEntityHealth(oPlayer,health+1)
-					end
+CreateThread(function()
+	while Config.Healing ~= 0 do
+		local objects = Config.objects
+		Wait(Config.Healing*1000)
+		if oUsing == true then
+			if objects.isBed == true then
+				local health = GetEntityHealth(oPlayer)
+				if health <= 199 then
+					SetEntityHealth(oPlayer,health+1)
 				end
 			end
 		end
-	end)
-end
+	end
+end)
 
 
 RegisterNetEvent("ChairBedSystem:Client:Animation")
