@@ -4,7 +4,6 @@ Config.Healing = 3 -- // If this is 0, then its disabled.. Default: 3.. That mea
 Config.Cooldown = 2 -- // If this is 0, then its disabled.. Default: 2.. That means, if a player goes and stand up, then he need to wait 2 seconds, before he can lay/sit again! [VERY RECOMMENDED]
 
 Config.objects = {
-	Object = nil, ObjectVertX = nil, ObjectVertY = nil, ObjectVertZ = nil, ObjectDir = nil, isBed = nil, -- // Please don't change this line!;)
 	ButtonToSitOnChair = 58, -- // Default: G -- // https://docs.fivem.net/game-references/controls/
 	ButtonToLayOnBed = 38, -- // Default: E -- // https://docs.fivem.net/game-references/controls/
 	ButtonToStandUp = 23, -- // Default: F -- // https://docs.fivem.net/game-references/controls/
@@ -25,6 +24,9 @@ Config.objects = {
 		{object="Prop_Off_Chair_01", verticalOffsetX=0.0, verticalOffsetY=-0.1, verticalOffsetZ=-0.5, direction=180.0, bed=false}
 	}
 }
+
+-- // YOU WILL FIND ALL BUTTONS HERE FOR CODE BELOW;P
+-- [[ https://docs.fivem.net/game-references/controls/ ]]
 
 Config.Text = {
 	SitOnChair = '~INPUT_THROW_GRENADE~ to sit',
