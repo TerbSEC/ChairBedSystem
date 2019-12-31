@@ -27,9 +27,9 @@ Config.objects = {
 }
 
 Config.Text = {
-	SitOnChair = '~g~G~w~ to sit',
-	SitOnBed = '~g~E~w~ to sit on the bed',
-	LieOnBed = '~g~E~w~ to lie on your',
-	SwitchBetween = '~w~ Switch between the stomach, back and sit with the ~g~arrow keys',
-	Standup = '~g~F~w~ to stand up!'
+	SitOnChair = '~INPUT_THROW_GRENADE~ to sit',
+	SitOnBed = '~INPUT_PICKUP~ to sit on the bed',
+	LieOnBed = '~INPUT_PICKUP~ to lay on your',
+	SwitchBetween = '~INPUT_CELLPHONE_LEFT~ ~INPUT_CELLPHONE_RIGHT~ switch between',
+	Standup = '~INPUT_ARREST~ to stand up!',
 }
