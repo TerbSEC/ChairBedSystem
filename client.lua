@@ -11,7 +11,7 @@ local PlyLastPos = 0
 local Anim = 'sit'
 local AnimScroll = 0
 
--- // WHEN YOU ARE OUT OF RANGE, TICK EVERY MS!
+-- // WHEN YOU ARE OUT OF RANGE, IT DOSENT TICK EVERY MS!
 local canSleep = false
 
 CreateThread(function()
@@ -119,6 +119,20 @@ CreateThread(function()
             Citizen.Wait(1000)
         end
     end
+end)
+
+CreateThread(function()
+	while Config.Healing ~= 0 do
+		Wait(Config.Healing*1000)
+		if inUse == true then
+			if ObjectAr.fObjectIsBed == true then
+				local health = GetEntityHealth(oPlayer)
+				if health <= 199 then
+					SetEntityHealth(oPlayer,health+1)
+				end
+			end
+		end
+	end
 end)
 
 RegisterNetEvent('ChairBedSystem:Client:Animation')
