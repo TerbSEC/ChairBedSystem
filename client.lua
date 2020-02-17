@@ -126,9 +126,10 @@ CreateThread(function()
 		Wait(Config.Healing*1000)
 		if inUse == true then
 			if ObjectAr.fObjectIsBed == true then
-				local health = GetEntityHealth(oPlayer)
+				local ply = PlayerPedId()
+				local health = GetEntityHealth(ply)
 				if health <= 199 then
-					SetEntityHealth(oPlayer,health+1)
+					SetEntityHealth(ply,health+1)
 				end
 			end
 		end
