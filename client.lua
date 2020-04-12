@@ -1,6 +1,6 @@
--- // OPTIMIZE PAIR!
-local ObjectAr = {}
-local currObject = 0
+local plyCoords = GetEntityCoords(PlayerPedId())
+local isWithinObject = false
+local oElement = {}
 
 -- // BASIC
 local InUse = false
@@ -11,53 +11,17 @@ local PlyLastPos = 0
 local Anim = 'sit'
 local AnimScroll = 0
 
--- // WHEN YOU ARE OUT OF RANGE, IT DOSENT TICK EVERY MS!
-local canSleep = false
-
+-- Fast Thread
 CreateThread(function()
     while true do
-        Wait(1000)
-        if (InUse == false) and (canSleep == true) then
-            plyCoords = GetEntityCoords(PlayerPedId(), 0)
-            for k, v in pairs(Config.objects.locations) do
-                local oObject = GetClosestObjectOfType(plyCoords.x, plyCoords.y, plyCoords.z, 1.0, GetHashKey(v.object), 0, 0, 0)
-                if (oObject ~= 0) then
-                    local oObjectCoords = GetEntityCoords(oObject)
-                    local ObjectDistance = #(vector3(oObjectCoords) - plyCoords)
-                    if (ObjectDistance < 2) then
-                        if (oObject ~= currObject) then
-                            currObject = oObject
-                            local oObjectExists = DoesEntityExist(oObject)
-                            ObjectAr = {
-                                fObject = oObject,
-                                fObjectCoords = oObjectCoords,
-                                fObjectcX = v.verticalOffsetX,
-                                fObjectcY = v.verticalOffsetY,
-                                fObjectcZ = v.verticalOffsetZ,
-                                fObjectDir = v.direction,
-                                fObjectIsBed = v.bed
-                            }
-                        end
-                    end
-                end
-            end
-        end
-    end
-end)
+        if isWithinObject and oElement.fObject ~= 0 then
+            local ply = PlayerPedId()
+            local objectCoords = oElement.fObjectCoords
+            local distanceDiff = #(objectCoords - plyCoords)
+            if (distanceDiff < 2.0 and not inUse) then
+                if (oElement.fObjectIsBed == true) then
 
-CreateThread(function()
-    while true do
-        Wait(0)
-        canSleep = true
-        if ObjectAr.fObject ~= nil then
-            ply = PlayerPedId()
-            plyCoords = GetEntityCoords(ply, 0)
-            ObjectCoords = ObjectAr.ObjectCoords
-            local ObjectDistance = #(vector3(ObjectAr.fObjectCoords) - plyCoords)
-            if (ObjectDistance < 1.8 and not InUse) then
-                if (ObjectAr.fObjectIsBed) == true then
-                    
-                    --[[ ARROW RIGHT ]]
+                    -- // ARROW RIGHT
                     if IsControlJustPressed(0, 175) then -- right
                         if (AnimScroll ~= 2) then
                             AnimScroll = AnimScroll + 1
@@ -69,7 +33,7 @@ CreateThread(function()
                         end
                     end
                     
-                    --[[ ARROW LEFT ]]
+                    -- // ARROW LEFT
                     if IsControlJustPressed(0, 174) then -- left
                         if (AnimScroll ~= 0) then
                             AnimScroll = AnimScroll - 1
@@ -80,31 +44,29 @@ CreateThread(function()
                             Anim = "sit"
                         end
                     end
-                    
+
                     if (Anim == 'sit') then
-                        
-                        -- // Sorry for this shitty space solution :joy: <br> dont work with the buttons ;(
-                        DisplayHelpText(Config.Text.SitOnBed .. '                               ' .. Config.Text.SwitchBetween, 1)
+                        DrawText3Ds(objectCoords.x, objectCoords.y, objectCoords.z, Config.Text.SitOnBed .. ' | ' .. Config.Text.SwitchBetween)
                     else
-                        -- // Sorry for this shitty space solution :joy: <br> dont work with the buttons ;(
-                        DisplayHelpText(Config.Text.LieOnBed .. ' ' .. Anim .. '                          ' .. Config.Text.SwitchBetween, 1)
+                        DrawText3Ds(objectCoords.x, objectCoords.y, objectCoords.z, Config.Text.LieOnBed .. ' ~g~' .. Anim .. '~w~ | ' .. Config.Text.SwitchBetween)
                     end
+
                     if IsControlJustPressed(0, Config.objects.ButtonToLayOnBed) then
-                        TriggerServerEvent('ChairBedSystem:Server:Enter', ObjectAr, ObjectAr.fObjectCoords)
+                        TriggerServerEvent('ChairBedSystem:Server:Enter', oElement, oElement.fObjectCoords)
                     end
-                else
-                    DisplayHelpText(Config.Text.SitOnChair, 1)
+                else    
+                    DrawText3Ds(objectCoords.x, objectCoords.y, objectCoords.z, Config.Text.SitOnChair)
                     if IsControlJustPressed(0, Config.objects.ButtonToSitOnChair) then
-                        TriggerServerEvent('ChairBedSystem:Server:Enter', ObjectAr, ObjectAr.fObjectCoords)
+                        TriggerServerEvent('ChairBedSystem:Server:Enter', oElement, oElement.fObjectCoords)
                     end
-                end
+                end     
             end
-            
+
             if (inUse) then
-                DisplayHelpText(Config.Text.Standup, 0)
+                DrawText3Ds(objectCoords.x, objectCoords.y, objectCoords.z, Config.Text.Standup)
                 if IsControlJustPressed(0, Config.objects.ButtonToStandUp) then
                     inUse = false
-                    TriggerServerEvent('ChairBedSystem:Server:Leave', ObjectAr.fObjectCoords)
+                    TriggerServerEvent('ChairBedSystem:Server:Leave', oElement.fObjectCoords)
                     ClearPedTasksImmediately(ply)
                     FreezeEntityPosition(ply, false)
                     
@@ -115,36 +77,75 @@ CreateThread(function()
                 end
             end
         end
-        if canSleep then
-            Citizen.Wait(1000)
+        Wait(0)
+    end
+end)
+
+-- Medium Thread
+CreateThread(function()
+    while true do
+        plyCoords = GetEntityCoords(PlayerPedId())
+        Wait(1000)
+    end
+end)
+
+
+-- Slow Thread
+CreateThread(function()
+    Wait(1500)
+    while true do
+        for _, element in pairs(Config.objects.locations) do
+            local closestObject = GetClosestObjectOfType(plyCoords.x, plyCoords.y, plyCoords.z, 3.0, GetHashKey(element.object), 0, 0, 0)
+            local coordsObject = GetEntityCoords(closestObject)
+            local distanceDiff = #(coordsObject - plyCoords)
+            if (distanceDiff < 3.0 and closestObject ~= 0) then
+                if (distanceDiff < 2.0) then
+                    oElement = {
+                        fObject = closestObject,
+                        fObjectCoords = coordsObject,
+                        fObjectcX = element.verticalOffsetX,
+                        fObjectcY = element.verticalOffsetY,
+                        fObjectcZ = element.verticalOffsetZ,
+                        fObjectDir = element.direction,
+                        fObjectIsBed = element.bed
+                    }
+                    isWithinObject = true
+                end
+                break
+            else
+                isWithinObject = false
+            end
+        end
+        Wait(2000)
+    end
+end)
+
+
+-- Healing Thread
+CreateThread(function()
+    while Config.Healing ~= 0 do
+        Wait(Config.Healing * 1000)
+        if inUse == true then
+            if oElement.fObjectIsBed == true then
+                local ply = PlayerPedId()
+                local health = GetEntityHealth(ply)
+                if health <= 199 then
+                    SetEntityHealth(ply, health + 1)
+                end
+            end
         end
     end
 end)
 
-CreateThread(function()
-	while Config.Healing ~= 0 do
-		Wait(Config.Healing*1000)
-		if inUse == true then
-			if ObjectAr.fObjectIsBed == true then
-				local ply = PlayerPedId()
-				local health = GetEntityHealth(ply)
-				if health <= 199 then
-					SetEntityHealth(ply,health+1)
-				end
-			end
-		end
-	end
-end)
-
 RegisterNetEvent('ChairBedSystem:Client:Animation')
-AddEventHandler('ChairBedSystem:Client:Animation', function(v, objectcoords)
+AddEventHandler('ChairBedSystem:Client:Animation', function(v, coords)
     local object = v.fObject
     local vertx = v.fObjectcX
     local verty = v.fObjectcY
     local vertz = v.fObjectcZ
     local dir = v.fObjectDir
     local isBed = v.fObjectIsBed
-    local objectcoords = v.fObjectCoords
+    local objectcoords = coords
     
     local ped = PlayerPedId()
     PlyLastPos = GetEntityCoords(ped)
@@ -201,14 +202,24 @@ AddEventHandler('ChairBedSystem:Client:Animation', function(v, objectcoords)
     end
 end)
 
-function DisplayHelpText(text, sound)
-    canSleep = false
-    AddTextEntry('label', text)
-    BeginTextCommandDisplayHelp('label')
-    DisplayHelpTextFromStringLabel(0, 0, sound, -1)
-    EndTextCommandDisplayText(0.5, 0.5)
-end
 
+
+function DrawText3Ds(x, y, z, text)
+    local onScreen, _x, _y = World3dToScreen2d(x, y, z)
+    
+    if onScreen then
+        SetTextScale(0.35, 0.35)
+        SetTextFont(4)
+        SetTextProportional(1)
+        SetTextColour(255, 255, 255, 215)
+        SetTextEntry("STRING")
+        SetTextCentre(1)
+        AddTextComponentString(text)
+        DrawText(_x, _y)
+        local factor = (string.len(text)) / 350
+        DrawRect(_x, _y + 0.0125, 0.015 + factor, 0.03, 41, 11, 41, 68)
+    end
+end
 
 function Animation(dict, anim, ped)
     RequestAnimDict(dict)
