@@ -18,7 +18,7 @@ CreateThread(function()
             local ply = PlayerPedId()
             local objectCoords = oElement.fObjectCoords
             local distanceDiff = #(objectCoords - plyCoords)
-            if (distanceDiff < 2.0 and not inUse) then
+            if (distanceDiff < 2.0 and not InUse) then
                 if (oElement.fObjectIsBed == true) then
 
                     -- // ARROW RIGHT
@@ -62,10 +62,10 @@ CreateThread(function()
                 end     
             end
 
-            if (inUse) then
+            if (InUse) then
                 DrawText3Ds(objectCoords.x, objectCoords.y, objectCoords.z, Config.Text.Standup)
                 if IsControlJustPressed(0, Config.objects.ButtonToStandUp) then
-                    inUse = false
+                    InUse = false
                     TriggerServerEvent('ChairBedSystem:Server:Leave', oElement.fObjectCoords)
                     ClearPedTasksImmediately(ply)
                     FreezeEntityPosition(ply, false)
@@ -125,7 +125,7 @@ end)
 CreateThread(function()
     while Config.Healing ~= 0 do
         Wait(Config.Healing * 1000)
-        if inUse == true then
+        if InUse == true then
             if oElement.fObjectIsBed == true then
                 local ply = PlayerPedId()
                 local health = GetEntityHealth(ply)
@@ -151,7 +151,7 @@ AddEventHandler('ChairBedSystem:Client:Animation', function(v, coords)
     PlyLastPos = GetEntityCoords(ped)
     FreezeEntityPosition(object, true)
     FreezeEntityPosition(ped, true)
-    inUse = true
+    InUse = true
     if isBed == false then
         if Config.objects.SitAnimation.dict ~= nil then
             SetEntityCoords(ped, objectcoords.x, objectcoords.y, objectcoords.z + 0.5)
