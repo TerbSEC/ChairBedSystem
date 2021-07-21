@@ -29,7 +29,6 @@ Citizen.CreateThread(function()
         local inRange = false
         for i = 1, #Config.objects.locations do
             local current = Config.objects.locations[i]
-            -- if current.object == 0 then print(current.object) end
             local coordsObject = GetEntityCoords(current.object)
             local dist = #(PlayerPos - vector3(coordsObject.x, coordsObject.y, coordsObject.z))
             if dist <= 3.0 then
