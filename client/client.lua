@@ -118,7 +118,7 @@ end
 
 RegisterNetEvent('ChairBedSystem:Client:Animation')
 AddEventHandler('ChairBedSystem:Client:Animation', function(v, coords)
-    local object = v.objName
+    local object = v.object
     local vertx = v.verticalOffsetX
     local verty = v.verticalOffsetY
     local vertz = v.verticalOffsetZ
