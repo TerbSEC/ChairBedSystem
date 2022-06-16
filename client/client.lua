@@ -43,12 +43,12 @@ Citizen.CreateThread(function()
                         else
                             DrawText3Ds(coordsObject.x, coordsObject.y, coordsObject.z, Config.Text.LieOnBed .. ' ~g~' .. Anim .. '~w~ | ' .. Config.Text.SwitchBetween)
                         end
-                        if IsControlJustPressed(0, Config.objects.ButtonToLayOnBed) then
+                        if IsControlJustPressed(0, Config.ButtonLayBed) then
                             TriggerServerEvent('ChairBedSystem:Server:Enter', current, coordsObject)
                         end
                     else
                         DrawText3Ds(coordsObject.x, coordsObject.y, coordsObject.z, Config.Text.SitOnChair)
-                        if IsControlJustPressed(0, Config.objects.ButtonToSitOnChair) then
+                        if IsControlJustPressed(0, Config.ButtonSitChair) then
                             TriggerServerEvent('ChairBedSystem:Server:Enter', current, coordsObject)
                         end 
                     end
@@ -56,7 +56,7 @@ Citizen.CreateThread(function()
 
                 if (InUse) then
                     DrawText3Ds(coordsObject.x, coordsObject.y, coordsObject.z, Config.Text.Standup)
-                    if IsControlJustPressed(0, Config.objects.ButtonToStandUp) then
+                    if IsControlJustPressed(0, Config.ButtonStandUp) then
                         InUse = false
                         TriggerServerEvent('ChairBedSystem:Server:Leave', coordsObject)
                         ClearPedTasksImmediately(PlayerPed)
