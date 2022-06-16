@@ -17,7 +17,7 @@ AddEventHandler('playerDropped', function()
     end
 end)
 
-
+-- Player lies down/sits on Object
 RegisterServerEvent('ChairBedSystem:Server:Enter')
 AddEventHandler('ChairBedSystem:Server:Enter', function(object, objectcoords)
     local oSource = source
@@ -28,7 +28,7 @@ AddEventHandler('ChairBedSystem:Server:Enter', function(object, objectcoords)
     end
 end)
 
-
+-- Player leaves Object
 RegisterServerEvent('ChairBedSystem:Server:Leave')
 AddEventHandler('ChairBedSystem:Server:Leave', function(objectcoords)
     local oSource = source
@@ -36,4 +36,3 @@ AddEventHandler('ChairBedSystem:Server:Leave', function(objectcoords)
     oPlayerUse[oSource] = nil
     oArray[objectcoords] = nil
 end)
-

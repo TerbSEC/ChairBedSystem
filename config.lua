@@ -7,10 +7,13 @@
 
 Config = {}
 
+-- Default Keys (Refer to https://docs.fivem.net/game-references/controls/ for IDs)
+Config.ButtonSitChair = 58
+Config.ButtonLayBed = 38
+Config.ButtonStandUp = 23
+
+-- Objects for this script to work with
 Config.objects = {
-	ButtonToSitOnChair = 58, -- // Default: G -- // https://docs.fivem.net/game-references/controls/
-	ButtonToLayOnBed = 38, -- // Default: E -- // https://docs.fivem.net/game-references/controls/
-	ButtonToStandUp = 23, -- // Default: F -- // https://docs.fivem.net/game-references/controls/
 	SitAnimation = {anim='PROP_HUMAN_SEAT_CHAIR_MP_PLAYER'},
 	BedBackAnimation = {dict='anim@gangops@morgue@table@', anim='ko_front'},
 	BedStomachAnimation = {anim='WORLD_HUMAN_SUNBATHE'},
